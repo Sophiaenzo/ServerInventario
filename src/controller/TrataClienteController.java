@@ -128,7 +128,13 @@ public class TrataClienteController extends Thread {
                   String versao = funcoes.GetProp("app.versaopath");
                   System.out.println("retorno da versao " + versao);                  
                   out.writeObject(versao);
-                  
+             }else if(comando.equalsIgnoreCase("numerocontagem")){
+                 
+                 System.out.println("funcao numerocontagem");
+                  Te220invDao dadosDao = new Te220invDao();                   
+                  ArrayList<Te220inv> listaContagem = dadosDao.getLanca(data);  
+                  out.writeObject(listaContagem);
+                 
             }else{
                    //comando invalido
                    out.writeObject("nok");
