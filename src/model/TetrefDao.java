@@ -102,7 +102,7 @@ public class TetrefDao {
             cRe_coddep =  cdeposito;
             cRe_codpro =  "Vazio" ;
             cRe_codder =  ".";
-            cRe_numcon =   1;
+            cRe_numcon =   0;
             cRe_qtdcon =  "0";
             cRe_usucon =  CodeUsu;
             cRe_datcon =  DataHoraAtual("D"); 
@@ -125,21 +125,39 @@ public class TetrefDao {
             cRe_indbip  = "N";
             
             /*verifica se inventario esta bloqueado*/
-            vbloqueio = Funcoes.GetProp("inventario.bloqueado");
-            bloqueado = false;
+            /*vbloqueio = Funcoes.GetProp("inventario.bloqueado");*/
+            
+            System.out.println("verificar bloqueio");
+            System.out.println("dados " + cdata + "  " + cdeposito);
+            bloqueado = depositoBloqueado(cdata,cdeposito);            
+            vbloqueio = "NAO";
+            if (bloqueado){
+                vbloqueio = "SIM";
+            }
+            System.out.println(bloqueado);
+            System.out.println(vbloqueio);
+            
+            
             if(vbloqueio.equals("SIM")){
+                
+                System.out.println("vBloquio igual a sim sair da funcao");
+                
                  cRe_codpro = "Vazio";
                  cRe_lote   = "";
                  cRe_qtdcon ="0";
                  cRe_status  = "DANGER";
-                 cRe_indbip  = "N";
-            
-                cRe_obsbip  = "Inventario bloqueado pelo PCP ";
-                continua = false;            
+                 cRe_indbip  = "N";            
+                 cRe_obsbip  = "Inventario bloqueado pelo PCP ";
+                 continua = false;            
             }
-         
+            
+            /*funcao pega numero de contagens*/
             /*verifica se a etiqueta e valida*/
             if (continua == true) {
+                ultimaContagem(cdata,cdeposito);   
+                
+                System.out.println("numero da contagem -> " + cRe_numcon);
+                
                 etiqAtivo = validarEtiqueta(cetiqueta);
                 if (etiqAtivo == false){
                     cRe_codpro = "Vazio";
@@ -290,13 +308,23 @@ public class TetrefDao {
                  cRe_obsbip = "Produto Com Depostio Inativo";
               }
            }
-           incluir = BuscaRegistro(cdata,cdeposito,cRe_codpro,cetiqueta);            
+           
+           
+           if(vbloqueio.equals("SIM")) {
+               incluir = false;
+           }else{
+                incluir = BuscaRegistro(cdata,cdeposito,cRe_codpro,cetiqueta);            
+           }
+                   
+               
            if(incluir == true) {
                  IncluiRegistro();
            }else{
                 cRe_status  = "ATENCAO";
            }    
-                
+           
+           
+           
             Tetref items = new Tetref(cetiqueta,
                      cRe_codpro,
                      cRe_lote,
@@ -307,11 +335,54 @@ public class TetrefDao {
                  
             return listaDados; 
      } 
-       
-   
-     
-     
-     
+    
+    private boolean depositoBloqueado(String data,String deposito){       
+       boolean retorno=false;
+       try {
+           Statement stmtAux;
+           stmtAux = con.createStatement();
+           String sqlAux = "select * from USU_TE220INV where "
+                   + " USU_CODEMP = 3 AND "
+                   + " USU_DATINV = '" + data     + "' AND "
+                   + " USU_CODDEP = '" + deposito + "' AND "
+                   + " USU_BLOMOV = '1'";
+           ResultSet rsAux = stmtAux.executeQuery(sqlAux);
+           if(rsAux.isBeforeFirst())
+               {
+                 retorno = true;
+               }else{
+                retorno = false;
+               }
+           rsAux.close();
+       }catch(Exception e){
+           System.out.println("TetreDao 318 -> " + e.getMessage());
+       }
+       return retorno;
+      }           
+  
+    
+    private void ultimaContagem(String data,String deposito){       
+        try {
+           Statement stmtAux;
+           stmtAux = con.createStatement();
+           String sqlAux = "select * from USU_TE220INV where "
+                   + " USU_CODEMP = 3 AND "
+                   + " USU_DATINV = '" + data     + "' AND "
+                   + " USU_CODDEP = '" + deposito + "' ";
+           ResultSet rsAux = stmtAux.executeQuery(sqlAux);
+           if(rsAux.isBeforeFirst())
+               {
+                  while(rsAux.next()){cRe_numcon = rsAux.getInt("USU_ULTCON"); } 
+               }else{
+                 cRe_numcon = 1;
+               }
+           rsAux.close();
+       }catch(Exception e){
+           System.out.println("TetreDao 318 -> " + e.getMessage());
+       }
+     }           
+  
+    
      
    /**
     * classe para verificar se a etiqueta e valida

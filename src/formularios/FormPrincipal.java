@@ -2,13 +2,17 @@
 package formularios;
 
 import controller.TrataClienteController;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.table.DefaultTableModel;
 import util.Funcoes;
+import util.PropertiesUtil;
 /**
  *
  * @author wilson
@@ -46,25 +50,22 @@ public class FormPrincipal extends JFrame {
          try{
             ServerSocket servidor = new ServerSocket(12347);
             lblStatus.setText("Servidor inicializado. Aguardando conexoes");
-            System.out.println("Servidor inicializado. Aguardando conexoes");
             
-            txt_server.setText(funcoes.GetProp("banco.server"));
-            txt_porta.setText(funcoes.GetProp("banco.porta"));
-            txt_database.setText(funcoes.GetProp("banco.database"));
-            txt_usuario.setText(funcoes.GetProp("banco.usuario"));
-            txt_senha.setText(funcoes.GetProp("banco.senha"));
-            txt_instancia.setText(funcoes.GetProp("banco.instancia")); 
+            txt_server.setText(PropertiesUtil.getProperty("banco.server"));
+            txt_porta.setText(PropertiesUtil.getProperty("banco.porta"));
+            txt_database.setText(PropertiesUtil.getProperty("banco.database"));
+            txt_usuario.setText(PropertiesUtil.getProperty("banco.usuario"));
+            txt_senha.setText(PropertiesUtil.getProperty("banco.senha"));
+            txt_instancia.setText(PropertiesUtil.getProperty("banco.instancia")); 
             
-            txt_versaoapp.setText(funcoes.GetProp("app.versao")); 
-            txt_versaopath.setText(funcoes.GetProp("app.versaopath")); 
-            txt_exportadir.setText(funcoes.GetProp("exporta.path"));
-             
+            txt_versaoapp.setText(PropertiesUtil.getProperty("app.versao")); 
+            txt_versaopath.setText(PropertiesUtil.getProperty("app.versaopath")); 
+            txt_exportadir.setText(PropertiesUtil.getProperty("exporta.path"));
             
               // chamando e executando a classe conectaservidor
             ConectaServidor s1 = new ConectaServidor(servidor);
             //iniciando thread
             s1.start();  
-            
             
          }catch(Exception e){
             e.printStackTrace();
@@ -114,7 +115,6 @@ public class FormPrincipal extends JFrame {
         txt_exportadir = new javax.swing.JTextField();
         jLabel14 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -392,15 +392,8 @@ public class FormPrincipal extends JFrame {
                     .addComponent(jLabel14, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jButton2)
-                .addContainerGap(9, Short.MAX_VALUE))
+                .addContainerGap(10, Short.MAX_VALUE))
         );
-
-        jButton3.setText("jButton3");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -415,10 +408,6 @@ public class FormPrincipal extends JFrame {
                         .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 629, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 116, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton3)
-                .addGap(208, 208, 208))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -427,9 +416,7 @@ public class FormPrincipal extends JFrame {
                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jButton3)
-                .addContainerGap(30, Short.MAX_VALUE))
+                .addContainerGap(70, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Diretorio", new javax.swing.ImageIcon(getClass().getResource("/imagens/diretorio.png")), jPanel3); // NOI18N
@@ -454,9 +441,18 @@ public class FormPrincipal extends JFrame {
         funcoes.SaveProp("app.versao",txt_versaoapp.getText());
         funcoes.SaveProp("app.versaopath",txt_versaopath.getText());
         funcoes.SaveProp("exporta.path",txt_exportadir.getText());
+        funcoes.SaveProp("banco.server",txt_server.getText());
+        funcoes.SaveProp("banco.porta",txt_porta.getText());
+        funcoes.SaveProp("banco.usuario",txt_usuario.getText());
+        funcoes.SaveProp("banco.senha",txt_senha.getText() );
+        funcoes.SaveProp("banco.database",txt_database.getText());
+        funcoes.SaveProp("banco.instancia",txt_instancia.getText());
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        funcoes.SaveProp("app.versao",txt_versaoapp.getText());
+        funcoes.SaveProp("app.versaopath",txt_versaopath.getText());
+        funcoes.SaveProp("exporta.path",txt_exportadir.getText());
         funcoes.SaveProp("banco.server",txt_server.getText());
         funcoes.SaveProp("banco.porta",txt_porta.getText());
         funcoes.SaveProp("banco.usuario",txt_usuario.getText());
@@ -468,48 +464,6 @@ public class FormPrincipal extends JFrame {
     private void txt_instanciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_instanciaActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txt_instanciaActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-            boolean teste1 = true;
-            boolean teste2 = true;
-            boolean teste3 = true;
-            boolean teste4 = true;
-            
-            if (teste1) {
-                System.out.println("teste 01 true ");
-                teste1 =true;
-            }else{
-                System.out.println("teste 01  false "); 
-                teste1=false;
-            }
-            
-            
-            if (teste1) {
-                teste1=false;
-                System.out.println("teste 02 true ");
-            }else{
-                teste1 = false;
-                System.out.println("teste 02 false ");   
-            }
-            
-            if (teste1) {
-                teste4=true;            
-                System.out.println("teste 03 true");
-            }else{
-                System.out.println("teste 03 false "); 
-                teste4=false;
-            }   
-            
-            if (teste1) {
-                
-                System.out.println("teste 04 true");
-            }else{
-                System.out.println("teste 04 false "); 
-            }   
-              
-            
-            System.out.println("finalizado opcao false ");         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -553,7 +507,6 @@ public class FormPrincipal extends JFrame {
     private static javax.swing.JTable TableConecoes;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;

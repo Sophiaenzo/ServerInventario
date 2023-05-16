@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import util.Funcoes;
+import util.PropertiesUtil;
 
 /**
  * classe responsavel pela conexao com o banco de dados
@@ -22,24 +23,24 @@ public class Conector<AjaxBehaviorEvent> {
        public static Connection getConnection() throws ClassNotFoundException{
         try{   
         // Configuração dos parâmetros de conexão
-        String server   = Funcoes.GetProp("banco.server");
-        String port     = Funcoes.GetProp("banco.porta");
-        String database = Funcoes.GetProp("banco.database");
+        String server   = PropertiesUtil.getProperty("banco.server");
+        String port     = PropertiesUtil.getProperty("banco.porta");
+        String database = PropertiesUtil.getProperty("banco.database");
         // Configuração dos parâmetros de autenticação
-        String user     = Funcoes.GetProp("banco.usuario");
-        String passwd   = Funcoes.GetProp("banco.senha");
-        String banco    = Funcoes.GetProp("banco.instancia");
-       /* 
+        String user     = PropertiesUtil.getProperty("banco.usuario");
+        String passwd   = PropertiesUtil.getProperty("banco.senha");
+        String banco    = PropertiesUtil.getProperty("banco.instancia");
+      
         // Configuração dos parâmetros de conexão
-        String server   = "192.168.0.8";
-        String port     = "1521";
-        String database = "XE";
+        //server   = "192.168.0.250";
+        //port     = "1521";
+        //database = "ora10g";
         // Configuração dos parâmetros de autenticação
-        String user     = "SYSTEM";
-        String passwd   = "Tramar@2022";
-        String banco  = ""; //Configs.GetProp("Banco");
+        //user     = "ftbtra";
+        //passwd   = "ftbtra";
+        //banco  = "teste";
          
-        */
+       
         
         Class.forName("oracle.jdbc.driver.OracleDriver");        
         String url = "jdbc:oracle:thin:@" + server + ":" + port + ":" + database;	  

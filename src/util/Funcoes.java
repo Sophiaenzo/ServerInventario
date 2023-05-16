@@ -1,9 +1,12 @@
 package util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -15,34 +18,35 @@ import java.util.Properties;
  *
  * @author wilson
  */
-public class Funcoes {
-    
+public class Funcoes {    
     public static Properties prop = new Properties();
-    
-    public void SaveProp(String title, String value){
+    public void SaveProp(String title, String value) {
         try
         {
             prop.setProperty(title, value);
-            prop.store(new FileOutputStream("src/properties/config.properties"),null);
-        }catch(IOException e)
-        {
-        }
+            prop.store(new FileOutputStream("src/config.properties"),null);
+     
+        }catch(IOException e){
+            System.out.println("erro " + e.getMessage());
+        }        
     }
-    
-    
+   
+    /*
     public static String GetProp(String title)
     {
         String value = "";
         try
         {
            prop.load(new FileInputStream("src/properties/config.properties"));
-           value = prop.getProperty(title);
+           value = prop.getProperty(title);          
+           
         }catch(IOException e)
         {
             
         }
         return value;
     }
+    */
     /**
      * class para preencher a esquerda com u carcater especifico
      * @param valueToPad - tamanho da string

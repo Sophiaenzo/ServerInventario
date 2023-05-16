@@ -17,9 +17,7 @@ public class Te220inv implements Serializable{
         this.codemp = codemp;
         this.datinv = datinv;
         this.coddep = coddep;
-    }
-
-    
+    }    
       
 
     public int getcodemp() {

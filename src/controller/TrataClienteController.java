@@ -11,6 +11,7 @@ import model.R999usuDao;
 import model.Te220conDao;
 import model.Te220csvDao;
 import model.Te220invDao;
+import model.Te220invcDao;
 import model.Te220iteDao;
 import model.Te220txtDao;
 import model.TetrefDao;
@@ -18,12 +19,14 @@ import modelDominio.R999usu;
 import modelDominio.Te220con;
 import modelDominio.Te220csv;
 import modelDominio.Te220inv;
+import modelDominio.Te220invc;
 import modelDominio.Te220ite;
 import modelDominio.Te220sal;
 import modelDominio.Te220txt;
 import modelDominio.Tetref;
 import util.Funcoes;
 import util.Operacoes;
+import util.PropertiesUtil;
 
 /**
  * Classe responsavel por controlar as conexoes dos clientes
@@ -36,6 +39,19 @@ public class TrataClienteController extends Thread {
     private ObjectOutputStream out;
     private Socket s;
     private int idUnico;
+    
+         String data    ;
+         String deposito;
+         String codigo  ;
+         String tipo    ;
+         String codusu  ;
+         String depo    ;
+         int    cont    ;
+         boolean bloq   ;
+         
+    
+    
+    
     Funcoes funcoes = new Funcoes();
     
        /**
@@ -63,11 +79,11 @@ public class TrataClienteController extends Thread {
        try {
            Operacoes m     = (Operacoes) in.readObject();
            comando         = m.getOperacao();
-           String data     = (String) m.getParam("data");
-           String deposito = (String) m.getParam("deposito");
-           String codigo   = (String) m.getParam("codigo");
-           String tipo     = (String) m.getParam("tipo"); 
-           String codusu   = (String) m.getParam("codusu"); 
+           data     = (String) m.getParam("data");
+           deposito = (String) m.getParam("deposito");
+           codigo   = (String) m.getParam("codigo");
+           tipo     = (String) m.getParam("tipo"); 
+           codusu   = (String) m.getParam("codusu"); 
            
            System.out.println(comando);
            System.out.println(data);
@@ -108,33 +124,46 @@ public class TrataClienteController extends Thread {
                   TetrefDao dadosDao = new TetrefDao();                   
                   ArrayList<Tetref> listaLeitura = dadosDao.getListaDados(data,deposito,codigo,tipo,codusu);
                  out.writeObject(listaLeitura);   
-            }else if(comando.equalsIgnoreCase("bloqueio")){
-                  funcoes.SaveProp("inventario.bloqueado",data); 
+            }else if(comando.equalsIgnoreCase("aaabloqueio")){
+                 /*verificar foi substituda pela funcao bloqueio*/
+                  funcoes.SaveProp("inventario.bloqueado",data);                   
             }else if(comando.equalsIgnoreCase("verificacontagem")){
-                 //verifica saldo na contagem
+                //verifica saldo na contagem
+                System.out.println("verifica saldo na contagem");
                 Te220iteDao dadosDao = new Te220iteDao();                   
                 ArrayList<Te220ite> listaSaldo = dadosDao.getListaSaldo(data,tipo);
-                out.writeObject(listaSaldo);  
+                out.writeObject(listaSaldo); 
+                
             }else if(comando.equalsIgnoreCase("versaoatual")){
                 
                   System.out.println("class verificar versao atual");
-                  String versao = funcoes.GetProp("app.versao");
+                  String versao = PropertiesUtil.getProperty("app.versao");
                   System.out.println("retorno da versao " + versao);                  
                   out.writeObject(versao);
                   
             }else if(comando.equalsIgnoreCase("versaopath")){
                 
                   System.out.println("class verificar path da nova versao atual");
-                  String versao = funcoes.GetProp("app.versaopath");
+                  String versao = PropertiesUtil.getProperty("app.versaopath");
                   System.out.println("retorno da versao " + versao);                  
                   out.writeObject(versao);
              }else if(comando.equalsIgnoreCase("numerocontagem")){
                  
                  System.out.println("funcao numerocontagem");
-                  Te220invDao dadosDao = new Te220invDao();                   
-                  ArrayList<Te220inv> listaContagem = dadosDao.getLanca(data);  
+                  Te220invcDao dadosDao = new Te220invcDao();                   
+                  ArrayList<Te220invc> listaContagem = dadosDao.getLanca(data);  
                   out.writeObject(listaContagem);
-                 
+            }else if(comando.equalsIgnoreCase("bloqueio")){
+                
+                   tipo     = (String) m.getParam("tipo");         
+                   data     = (String) m.getParam("data");
+                   deposito = (String) m.getParam("deposito");
+                   cont     = (int) m.getParam("cont"); 
+                   bloq     = (boolean) m.getParam("bloq"); 
+              
+                 Te220invcDao dadosDao = new Te220invcDao();                   
+                 ArrayList<Te220invc> listaBloqueio = dadosDao.getBloqueio(data,deposito,cont,bloq);  
+                         
             }else{
                    //comando invalido
                    out.writeObject("nok");
