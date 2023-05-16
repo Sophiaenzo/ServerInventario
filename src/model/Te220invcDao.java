@@ -32,14 +32,29 @@ public class Te220invcDao {
                            stmt = con.createStatement();
                            String sql = "select * from E220INV where datinv = '" + cdata +"'" ;
                            ResultSet rs = stmt.executeQuery(sql);
+<<<<<<< HEAD
                            while(rs.next())
                                   { 
+=======
+
+                           while(rs.next())
+                                  {          
+                                      Te220invc items = new Te220invc(rs.getInt("CODEMP"),
+                                                   rs.getDate("DATINV"),
+                                                   rs.getString("CODDEP"),
+                                                   1,
+                                                   "N"
+                                      );
+                                      listaDados.add(items);
+                                   
+>>>>>>> d5d0729683afb0d9df673cbffa7768c855a16acd
                                      incluir = BuscaRegistro(cdata,rs.getString("CODDEP"));             
                                      if(incluir == true) 
                                          {  
                                              IncluiRegistro(cdata,rs.getString("CODDEP"));
                                          } 
                                   }
+<<<<<<< HEAD
                           rs.close();
                           stmt.close();
                      }   
@@ -68,10 +83,17 @@ public class Te220invcDao {
                                       );
                                       listaDados.add(items);                                   
                                   }
+=======
+
+>>>>>>> d5d0729683afb0d9df673cbffa7768c855a16acd
                           rs.close();
                           stmt.close();
                           con.close();
                           return listaDados;
+<<<<<<< HEAD
+=======
+
+>>>>>>> d5d0729683afb0d9df673cbffa7768c855a16acd
                      }   
                          catch (SQLException ErroSql)
                      {
@@ -80,13 +102,24 @@ public class Te220invcDao {
                      }    
                          finally
                      {
+<<<<<<< HEAD
                  }                 
+=======
+
+                 }       
+>>>>>>> d5d0729683afb0d9df673cbffa7768c855a16acd
             }
     
     
     private boolean BuscaRegistro(String data,String deposito){         
          boolean resposta = false;
          try {
+<<<<<<< HEAD
+=======
+             
+           System.out.println("funcao busca registro");  
+             
+>>>>>>> d5d0729683afb0d9df673cbffa7768c855a16acd
            Statement stmtAux;
            stmtAux = con.createStatement();
            String sqlAux = "select * from USU_TE220INV where USU_CODEMP = 3 AND USU_DATINV = '" + data + "' AND USU_CODDEP = '" + deposito + "'" ;
@@ -115,7 +148,11 @@ public class Te220invcDao {
                     st.setString(2,cdatinv);
                     st.setString(3,ccoddep);
                     st.setInt(4,1);
+<<<<<<< HEAD
                     st.setString(5,"0");
+=======
+                    st.setString(5,"N");
+>>>>>>> d5d0729683afb0d9df673cbffa7768c855a16acd
                     st.executeUpdate();
                     st.close();
                     conn.close();          
@@ -125,6 +162,7 @@ public class Te220invcDao {
                 }
             }        
              
+<<<<<<< HEAD
   
         public ArrayList<Te220invc> getBloqueio(String cdata,String cdeposito,int cContagem, boolean cBloqueio) throws ClassNotFoundException, SQLException {        
                 ArrayList<Te220invc> listaBloqueio = new ArrayList<>(); 
@@ -165,4 +203,9 @@ public class Te220invcDao {
         
         
    
+=======
+    
+    
+    
+>>>>>>> d5d0729683afb0d9df673cbffa7768c855a16acd
 }
