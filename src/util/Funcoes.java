@@ -176,7 +176,7 @@ public class Funcoes {
        prop.setProperty("bloqueio",tipo);
        prop.store(new FileOutputStream("src/properties/dadosBloqueio.properties"),null);
        }catch(IOException e){
-           e.printStackTrace();
+           System.out.println("erro - > " + e.getMessage());
        }      
       
    }

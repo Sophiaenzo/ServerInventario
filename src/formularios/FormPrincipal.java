@@ -2,13 +2,11 @@
 package formularios;
 
 import controller.TrataClienteController;
-import java.io.IOException;
+import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.table.DefaultTableModel;
 import util.Funcoes;
@@ -68,7 +66,7 @@ public class FormPrincipal extends JFrame {
             s1.start();  
             
          }catch(Exception e){
-            e.printStackTrace();
+            System.out.println("erro - > " + e.getMessage());
         }
          
      }
@@ -115,6 +113,7 @@ public class FormPrincipal extends JFrame {
         txt_exportadir = new javax.swing.JTextField();
         jLabel14 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -395,6 +394,13 @@ public class FormPrincipal extends JFrame {
                 .addContainerGap(10, Short.MAX_VALUE))
         );
 
+        jButton3.setText("jButton3");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -408,6 +414,10 @@ public class FormPrincipal extends JFrame {
                         .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 629, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 116, Short.MAX_VALUE)))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton3)
+                .addGap(145, 145, 145))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -416,7 +426,9 @@ public class FormPrincipal extends JFrame {
                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(70, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                .addComponent(jButton3)
+                .addGap(19, 19, 19))
         );
 
         jTabbedPane1.addTab("Diretorio", new javax.swing.ImageIcon(getClass().getResource("/imagens/diretorio.png")), jPanel3); // NOI18N
@@ -465,6 +477,20 @@ public class FormPrincipal extends JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txt_instanciaActionPerformed
 
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+             String url = "";
+                try {
+                
+                File arq = new File(url);
+                arq.createNewFile();
+                
+            }catch(Exception e){
+                System.out.println("erro " + e.getMessage());
+            }
+        
+        
+    }//GEN-LAST:event_jButton3ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -507,6 +533,7 @@ public class FormPrincipal extends JFrame {
     private static javax.swing.JTable TableConecoes;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel14;
@@ -569,7 +596,7 @@ class ConectaServidor extends Thread{
             }
         
         } catch (Exception e){
-            e.printStackTrace();
+            System.out.println("erro - > " + e.getMessage());
         }
     }
 }

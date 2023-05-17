@@ -26,7 +26,7 @@ public class PropertiesUtil {
         try {
             return getProperties().getProperty(chave); 
         } catch (Exception e) { 
-            e.printStackTrace(); 
+            System.out.println("erro - > " + e.getMessage());
             return null;
         }
     } 

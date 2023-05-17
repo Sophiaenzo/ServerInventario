@@ -3,7 +3,6 @@ package factory;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import util.Funcoes;
 import util.PropertiesUtil;
 
 /**
@@ -13,7 +12,6 @@ import util.PropertiesUtil;
  */
 public class Conector<AjaxBehaviorEvent> {
        private static Connection conn;
-       Funcoes funcoes = new Funcoes();
                  
        /**
         * responsavel pela conexao ao banco de dados
@@ -39,8 +37,7 @@ public class Conector<AjaxBehaviorEvent> {
         //user     = "ftbtra";
         //passwd   = "ftbtra";
         //banco  = "teste";
-         
-       
+        
         
         Class.forName("oracle.jdbc.driver.OracleDriver");        
         String url = "jdbc:oracle:thin:@" + server + ":" + port + ":" + database;	  
