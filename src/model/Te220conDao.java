@@ -22,8 +22,7 @@ public class Te220conDao {
     
     public ArrayList<Te220con> getListaDados(String cdata) throws ClassNotFoundException, SQLException {        
            ArrayList<Te220con> listaDados = new ArrayList<>(); 
-           Statement stmt;
-          
+           Statement stmt;          
            try
            {              
                  stmt = con.createStatement();
@@ -39,18 +38,13 @@ public class Te220conDao {
                                                    rs.getInt("USU_USUCON"),                                                                                                                                                      
                                                    rs.getString("USU_INDBIP"),        
                                                    rs.getString("USU_OBSBIP"));
-                     listaDados.add(items);
-                                    
-                     
-                     //System.out.println("Adicionando itens na lista " + items );
-                                        
+                     listaDados.add(items);                                        
                  }
                  System.out.println("Terminou: servidor linha 49" );
                 rs.close();
                 stmt.close();
                 con.close();
-                return listaDados;
-                 
+                return listaDados;                 
            }   
             catch (SQLException ErroSql)
            {
@@ -61,9 +55,9 @@ public class Te220conDao {
            {
                 
             }  
-       
     }
-    
+        
+ 
     
 }
 

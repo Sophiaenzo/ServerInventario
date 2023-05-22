@@ -3,6 +3,7 @@ package factory;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import util.Funcoes;
 import util.PropertiesUtil;
 
 /**
@@ -12,6 +13,7 @@ import util.PropertiesUtil;
  */
 public class Conector<AjaxBehaviorEvent> {
        private static Connection conn;
+       Funcoes funcoes = new Funcoes();
                  
        /**
         * responsavel pela conexao ao banco de dados
@@ -21,13 +23,24 @@ public class Conector<AjaxBehaviorEvent> {
        public static Connection getConnection() throws ClassNotFoundException{
         try{   
         // Configuração dos parâmetros de conexão
-        String server   = PropertiesUtil.getProperty("banco.server");
-        String port     = PropertiesUtil.getProperty("banco.porta");
-        String database = PropertiesUtil.getProperty("banco.database");
+       // String server   = PropertiesUtil.getProperty("banco.server");
+       // String port     = PropertiesUtil.getProperty("banco.porta");
+       // String database = PropertiesUtil.getProperty("banco.database");
         // Configuração dos parâmetros de autenticação
-        String user     = PropertiesUtil.getProperty("banco.usuario");
-        String passwd   = PropertiesUtil.getProperty("banco.senha");
-        String banco    = PropertiesUtil.getProperty("banco.instancia");
+       // String user     = PropertiesUtil.getProperty("banco.usuario");
+       // String passwd   = PropertiesUtil.getProperty("banco.senha");
+       // String banco    = PropertiesUtil.getProperty("banco.instancia");
+        
+        
+         // Configuração dos parâmetros de conexão
+        String server   = Funcoes.GetProp("banco.server");
+        String port     = Funcoes.GetProp("banco.porta");
+        String database = Funcoes.GetProp("banco.database");
+        // Configuração dos parâmetros de autenticação
+        String user     = Funcoes.GetProp("banco.usuario");
+        String passwd   = Funcoes.GetProp("banco.senha");
+        String banco    = Funcoes.GetProp("banco.instancia");
+        
       
         // Configuração dos parâmetros de conexão
         //server   = "192.168.0.250";

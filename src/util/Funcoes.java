@@ -31,7 +31,7 @@ public class Funcoes {
         }        
     }
    
-    /*
+   
     public static String GetProp(String title)
     {
         String value = "";
@@ -46,7 +46,7 @@ public class Funcoes {
         }
         return value;
     }
-    */
+   
     /**
      * class para preencher a esquerda com u carcater especifico
      * @param valueToPad - tamanho da string

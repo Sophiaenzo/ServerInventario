@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import model.R999usuDao;
 import model.Te220conDao;
+import model.Te220consDao;
 import model.Te220csvDao;
 import model.Te220invDao;
 import model.Te220invcDao;
@@ -17,6 +18,7 @@ import model.Te220txtDao;
 import model.TetrefDao;
 import modelDominio.R999usu;
 import modelDominio.Te220con;
+import modelDominio.Te220cons;
 import modelDominio.Te220csv;
 import modelDominio.Te220inv;
 import modelDominio.Te220invc;
@@ -129,41 +131,44 @@ public class TrataClienteController extends Thread {
                   funcoes.SaveProp("inventario.bloqueado",data);                   
             }else if(comando.equalsIgnoreCase("verificacontagem")){
                 //verifica saldo na contagem
-                System.out.println("verifica saldo na contagem");
                 Te220iteDao dadosDao = new Te220iteDao();                   
                 ArrayList<Te220ite> listaSaldo = dadosDao.getListaSaldo(data,tipo);
-                out.writeObject(listaSaldo); 
-                
+                out.writeObject(listaSaldo);                 
             }else if(comando.equalsIgnoreCase("versaoatual")){
-                
-                  System.out.println("class verificar versao atual");
                   String versao = PropertiesUtil.getProperty("app.versao");
                   System.out.println("retorno da versao " + versao);                  
-                  out.writeObject(versao);
-                  
+                  out.writeObject(versao);                  
             }else if(comando.equalsIgnoreCase("versaopath")){
-                
-                  System.out.println("class verificar path da nova versao atual");
                   String versao = PropertiesUtil.getProperty("app.versaopath");
                   System.out.println("retorno da versao " + versao);                  
                   out.writeObject(versao);
-             }else if(comando.equalsIgnoreCase("numerocontagem")){
+             }else if(comando.equalsIgnoreCase("depositoscontagem")){ 
+               
+                 System.out.println("Entrou na funcao getLanca no servidor");
                  
-                 System.out.println("funcao numerocontagem");
+                 
                   Te220invcDao dadosDao = new Te220invcDao();                   
-                  ArrayList<Te220invc> listaContagem = dadosDao.getLanca(data);  
-                  out.writeObject(listaContagem);
-            }else if(comando.equalsIgnoreCase("bloqueio")){
-                
+                  ArrayList<Te220invc> getLanca = dadosDao.getLanca(data);  
+                  out.writeObject(getLanca);
+                                                           
+             }else if(comando.equalsIgnoreCase("proximacontagem")){
+                 
+                 System.out.println("Entrou na funcao getcontagem no servidor");
+                 
+                 //preencher ultima contagem deinventario por deposito
+                 Te220consDao dadosDao = new Te220consDao();   
+                 ArrayList<Te220cons> getConta = dadosDao.getContagem(data, deposito);
+                 out.writeObject(getConta); 
+                 
+                 
+            }else if(comando.equalsIgnoreCase("bloqueio")){                
                    tipo     = (String) m.getParam("tipo");         
                    data     = (String) m.getParam("data");
                    deposito = (String) m.getParam("deposito");
                    cont     = (int) m.getParam("cont"); 
-                   bloq     = (boolean) m.getParam("bloq"); 
-              
+                   bloq     = (boolean) m.getParam("bloq");               
                  Te220invcDao dadosDao = new Te220invcDao();                   
-                 ArrayList<Te220invc> listaBloqueio = dadosDao.getBloqueio(data,deposito,cont,bloq);  
-                         
+                 ArrayList<Te220invc> listaBloqueio = dadosDao.getBloqueio(data,deposito,cont,bloq);                           
             }else{
                    //comando invalido
                    out.writeObject("nok");
