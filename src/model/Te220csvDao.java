@@ -74,7 +74,7 @@ public ArrayList<Te220csv> getListaDados(String cdata, String deposito) throws C
                      listaDados.add(items);  
                   
                  }
-                 System.out.println("Terminou: servidor linha 49" );
+              
                 rs.close();
                 stmt.close();
                 con.close();

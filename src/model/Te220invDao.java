@@ -80,17 +80,17 @@ public class Te220invDao {
                          "GROUP BY USU_CODDEP,USU_DATINV"  ;
                           
                  ResultSet rs = stmt.executeQuery(sql);
-                 //System.out.println(deposito);
+                
                  while(rs.next()){
                      Te220sal items = new Te220sal(rs.getString("deposito"),
                                                    rs.getFloat("esto"),
                                                    rs.getFloat("certo"),
                                                    rs.getFloat("errado"));
                      listaDados.add(items);
-                     //System.out.println("Adicionando itens na lista " + items );
+                
                                         
                  }
-                 System.out.println("Terminou: servidor linha 49" );
+              
                 rs.close();
                 stmt.close();
                 con.close();

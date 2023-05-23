@@ -1,2 +1,0 @@
-formularios.FormPrincipal
-formularios.ConectaServidor

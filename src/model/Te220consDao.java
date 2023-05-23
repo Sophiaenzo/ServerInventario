@@ -28,24 +28,21 @@ public class Te220consDao {
            Statement stmt;
            try
            {               
-                System.out.println("buscar ultima contagem para " + cdata + " " + cdeposito.trim());
-                
+           
                 
                  stmt = con.createStatement();
                  String sql = "select max(USU_NUMCON) USU_NUMCON from USU_TE220con where USU_CODEMP = 3 AND USU_DATINV = '" + cdata + "' AND USU_CODDEP = '" + cdeposito.trim() + "'";
                  ResultSet rs = stmt.executeQuery(sql);  
-                 
-                 System.out.println(sql);
-                 
+              
                  while(rs.next()){
-                     System.out.println(rs.getInt("USU_NUMCON"));
+                  
                      
-                     Te220cons items = new Te220cons(rs.getInt("USU_NUNCON"));
+                     Te220cons items = new Te220cons(rs.getInt("USU_NUMCON"));
                      listaDados.add(items);                            
                      
                  }
                                 
-                System.out.println("Terminou: servidor linha 49" );
+          
                 rs.close();
                 stmt.close();
                 con.close();

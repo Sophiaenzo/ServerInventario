@@ -52,10 +52,9 @@ public ArrayList<R999usu> getListaUsu(String cCodigo) throws ClassNotFoundExcept
                  stmt = con.createStatement();
                  String sql = "select * from R999usu where NOMUSU = '" + cCodigo +"'" ;
                  ResultSet rs = stmt.executeQuery(sql);
-                 System.out.println("variavel a procurar " + cCodigo);
+             
                  while(rs.next()){
-                     System.out.println("usuario " + rs.getString("NOMUSU" ));
-                     System.out.println("codigo  " + rs.getString("CODUSU"));
+                   
                      R999usu items = new R999usu(rs.getString("CODUSU"),
                                                  rs.getString("NOMUSU"));
                      listaDados.add(items);

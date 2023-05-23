@@ -126,21 +126,15 @@ public class TetrefDao {
             
             /*verifica se inventario esta bloqueado*/
             /*vbloqueio = Funcoes.GetProp("inventario.bloqueado");*/
-            
-            System.out.println("verificar bloqueio");
-            System.out.println("dados " + cdata + "  " + cdeposito);
+          
             bloqueado = depositoBloqueado(cdata,cdeposito);            
             vbloqueio = "NAO";
             if (bloqueado){
                 vbloqueio = "SIM";
             }
-            System.out.println(bloqueado);
-            System.out.println(vbloqueio);
-            
+          
             
             if(vbloqueio.equals("SIM")){
-                
-                System.out.println("vBloquio igual a sim sair da funcao");
                 
                  cRe_codpro = "Vazio";
                  cRe_lote   = "";
@@ -155,8 +149,6 @@ public class TetrefDao {
             /*verifica se a etiqueta e valida*/
             if (continua == true) {
                 ultimaContagem(cdata,cdeposito);   
-                
-                System.out.println("numero da contagem -> " + cRe_numcon);
                 
                 etiqAtivo = validarEtiqueta(cetiqueta);
                 if (etiqAtivo == false){

@@ -40,7 +40,7 @@ public class Te220conDao {
                                                    rs.getString("USU_OBSBIP"));
                      listaDados.add(items);                                        
                  }
-                 System.out.println("Terminou: servidor linha 49" );
+               
                 rs.close();
                 stmt.close();
                 con.close();

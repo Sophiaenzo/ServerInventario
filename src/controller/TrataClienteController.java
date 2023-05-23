@@ -86,11 +86,7 @@ public class TrataClienteController extends Thread {
            codigo   = (String) m.getParam("codigo");
            tipo     = (String) m.getParam("tipo"); 
            codusu   = (String) m.getParam("codusu"); 
-           
-           System.out.println(comando);
-           System.out.println(data);
-           System.out.println(tipo);           
-           
+       
            
            while(!comando.equalsIgnoreCase("fim")){
             System.out.println("Cliente "+ idUnico+" enviou o comando " + comando );
@@ -136,25 +132,20 @@ public class TrataClienteController extends Thread {
                 out.writeObject(listaSaldo);                 
             }else if(comando.equalsIgnoreCase("versaoatual")){
                   String versao = PropertiesUtil.getProperty("app.versao");
-                  System.out.println("retorno da versao " + versao);                  
+                                   
                   out.writeObject(versao);                  
             }else if(comando.equalsIgnoreCase("versaopath")){
                   String versao = PropertiesUtil.getProperty("app.versaopath");
-                  System.out.println("retorno da versao " + versao);                  
+                             
                   out.writeObject(versao);
              }else if(comando.equalsIgnoreCase("depositoscontagem")){ 
                
-                 System.out.println("Entrou na funcao getLanca no servidor");
-                 
-                 
                   Te220invcDao dadosDao = new Te220invcDao();                   
                   ArrayList<Te220invc> getLanca = dadosDao.getLanca(data);  
                   out.writeObject(getLanca);
                                                            
              }else if(comando.equalsIgnoreCase("proximacontagem")){
-                 
-                 System.out.println("Entrou na funcao getcontagem no servidor");
-                 
+                            
                  //preencher ultima contagem deinventario por deposito
                  Te220consDao dadosDao = new Te220consDao();   
                  ArrayList<Te220cons> getConta = dadosDao.getContagem(data, deposito);

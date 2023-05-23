@@ -121,8 +121,7 @@ public class Funcoes {
     
     public static int diames(String data){
         LocalDate currentDate = LocalDate.parse(data);
-        int dia = currentDate.getDayOfMonth();
-        System.out.println(dia); 
+        int dia = currentDate.getDayOfMonth();    
         return dia;
     }
    /**
