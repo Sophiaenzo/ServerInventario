@@ -20,25 +20,39 @@ import java.util.Properties;
  */
 public class Funcoes {    
     public static Properties prop = new Properties();
-    public void SaveProp(String title, String value) {
+     final String secretKey = "ssshhhhhhhhhhh!!!!";
+    
+    public void SaveProp(String title, String value,String encry) {
         try
         {
-            prop.setProperty(title, value);
-            prop.store(new FileOutputStream("src/config.properties"),null);
+            String cvalue = value;
+            if(encry.equals("S")){
+                cvalue =   Encryption.encrypt(value, secretKey) ;
+            }
+            
+            prop.setProperty(title, cvalue);
+            prop.store(new FileOutputStream("config.properties"),null);
      
         }catch(IOException e){
             System.out.println("erro " + e.getMessage());
         }        
     }
+	
+	 
    
-   
-    public static String GetProp(String title)
+    public String GetProp(String title,String encry)
     {
         String value = "";
+        String cvalor = "";
         try
         {
-           prop.load(new FileInputStream("src/properties/config.properties"));
-           value = prop.getProperty(title);          
+           prop.load(new FileInputStream("config.properties"));
+           cvalor = prop.getProperty(title);
+           
+          if(encry.equals("S")){
+                cvalor =   Encryption.decrypt(cvalor, secretKey) ;
+            } 
+         value = cvalor;  
            
         }catch(IOException e)
         {
@@ -46,6 +60,7 @@ public class Funcoes {
         }
         return value;
     }
+   
    
     /**
      * class para preencher a esquerda com u carcater especifico

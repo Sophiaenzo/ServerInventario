@@ -49,12 +49,23 @@ public class Te220iteDao {
            try
            {                
                  stmt = con.createStatement();
-                
-                 String sql = "SELECT A.CODEMP codemp,A.DATINV datinv,A.CODDEP coddep,A.CODPRO codpro,A.QTDEST qtdest ,SUM(B.USU_QTDCON) qtdcon,(A.QTDEST - SUM(B.USU_QTDCON)) qtdsal "+
+                 
+                  System.out.println("select - pegar dados com a data -> " + cdata);
+                /*
+                 String sql = "SELECT A.CODEMP codemp,A.DATINV datinv,A.CODDEP coddep,A.CODPRO codpro,A.QTDEST qtdest ,SUM(B.USU_QTDCON) qtdcon,(SUM(B.USU_QTDCON) - A.QTDEST) qtdsal "+
                               "from E220ITE A " +
                               "INNER JOIN USU_TE220CON B ON B.USU_CODEMP = A.CODEMP AND B.USU_DATINV = A.DATINV AND B.USU_CODPRO = A.CODPRO "+
                               "WHERE A.CODEMP = 3 AND A.DATINV = '"+cdata+"' and B.USU_INDBIP = 'S'" +
                               "GROUP BY A.CODEMP,A.DATINV,A.CODDEP,A.CODPRO,A.QTDEST ";
+                 */
+                 String sql = "SELECT a.USU_CODEMP codemp,a.USU_DATINV datinv,a.usu_codpro codpro,a.usu_coddep coddep,B.QTDEST qtdest,sum(A.USU_QTDCON) qtdcon,(B.QTDEST - SUM(A.USU_QTDCON)) qtdsal "+
+                              "FROM USU_TE220CON a "+
+                              "INNER JOIN E220ite b ON b.codemp = a.USU_CODEMP AND b.CODPRO = a.USU_CODPRO AND b.CODDEP = a.usu_coddep and a.USU_DATINV = b.datinv "+
+                              "WHERE a.USU_DATINV = '"+cdata+"' and a.USU_INDBIP = 'S' "+
+                              "GROUP BY a.USU_CODEMP,a.USU_DATINV,a.usu_codpro,a.usu_coddep,B.QTDEST "+
+                              "ORDER BY a.USU_CODPRO,a.usu_coddep ";
+
+                 
                           
                  ResultSet rs = stmt.executeQuery(sql);
                  //System.out.println(deposito);

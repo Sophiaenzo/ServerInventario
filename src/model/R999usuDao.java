@@ -25,6 +25,7 @@ package model;
 
 import factory.Conector;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -35,46 +36,37 @@ import modelDominio.R999usu;
  * @author wilson
  */
 public class R999usuDao {
-    private Connection con;
     
     
-    public R999usuDao() throws ClassNotFoundException{
-       con = Conector.getConnection();
-}
-    
-    
-public ArrayList<R999usu> getListaUsu(String cCodigo) throws ClassNotFoundException, SQLException {        
-           ArrayList<R999usu> listaDados = new ArrayList<>(); 
-           Statement stmt;
-          
+public static ArrayList<R999usu> getListaUsu(String cCodigo) throws ClassNotFoundException { 
+           ArrayList<R999usu> listaDados = new ArrayList<>();
+           String sql = "select * from E099usu where upper(NOMUSU) = ?" ;
+           Connection conn = Conector.getConnection();      
            try
            {              
-                 stmt = con.createStatement();
-                 String sql = "select * from R999usu where NOMUSU = '" + cCodigo +"'" ;
-                 ResultSet rs = stmt.executeQuery(sql);
-             
-                 while(rs.next()){
-                   
+               
+//                System.out.println(cCodigo);
+//                System.out.println(cCodigo.toUpperCase());
+               
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, cCodigo.toUpperCase());
+                ResultSet rs = ps.executeQuery(); //vazio no prepareStatement
+                 if(rs.next()){                   
                      R999usu items = new R999usu(rs.getString("CODUSU"),
                                                  rs.getString("NOMUSU"));
                      listaDados.add(items);
+                 } else {
+                     R999usu items = new R999usu("0","Login diferente");
+                     listaDados.add(items);
                  }
-              
-                rs.close();
-                stmt.close();
-                con.close();
-                return listaDados;
-                 
+              Conector.close(conn,ps,rs);
+              return listaDados;                  
            }   
             catch (SQLException ErroSql)
            {
-            System.out.println("Erro ao selecionar registros: " + ErroSql);
-            return null;
-           }    
-            finally
-           {
-                
-            }  
+                System.out.println("Erro ao selecionar registros: " + ErroSql);
+                return null;
+           } 
        
     }
     

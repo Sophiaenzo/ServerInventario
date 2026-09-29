@@ -2,7 +2,6 @@
 package formularios;
 
 import controller.TrataClienteController;
-import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -10,15 +9,15 @@ import java.net.Socket;
 import javax.swing.JFrame;
 import javax.swing.table.DefaultTableModel;
 import util.Funcoes;
-import util.PropertiesUtil;
 /**
  *
  * @author wilson
  */
 public class FormPrincipal extends JFrame {
-     Funcoes funcoes = new Funcoes();  
+    Funcoes funcoes = new Funcoes();  
     
-    public static void AddLinhaTable(Object[] object) {        
+    public static void AddLinhaTable(Object[] object) { 
+               
         DefaultTableModel model = (DefaultTableModel)TableConecoes.getModel();
         model.addRow(object);
     }
@@ -38,31 +37,43 @@ public class FormPrincipal extends JFrame {
     }
         
     
+    public static void PesLinhaTable(String campo){        
+        DefaultTableModel model1 = (DefaultTableModel)TableConecoes.getModel();      
+        String pesquisa = campo;
+        if (pesquisa.length()> 0){            
+            for (int i=0;i<model1.getRowCount();i++){
+                if (pesquisa.equals(model1.getValueAt(i,0))){
+                    model1.setValueAt("campo", i, 3);
+                }                
+            }
+        }
+        
+    }
+    
     
     public FormPrincipal() {
         initComponents();
-        init();
+        init();        
     }
     
      private void init() {
          try{
             ServerSocket servidor = new ServerSocket(12347);
             lblStatus.setText("Servidor inicializado. Aguardando conexoes");
+            // lblStatus.setText("Servidor inicializado. Aguardando conexoes");
+ 
+	    txt_server.setText(funcoes.GetProp("banco.server","N"));
+            txt_porta.setText(funcoes.GetProp("banco.porta","N"));
+            txt_database.setText(funcoes.GetProp("banco.database","N"));
+            txt_usuario.setText(funcoes.GetProp("banco.usuario","N"));
+            txt_senha.setText(funcoes.GetProp("banco.senha","S"));
+            txt_instancia.setText(funcoes.GetProp("banco.instancia","N")); 					
             
-            txt_server.setText(PropertiesUtil.getProperty("banco.server"));
-            txt_porta.setText(PropertiesUtil.getProperty("banco.porta"));
-            txt_database.setText(PropertiesUtil.getProperty("banco.database"));
-            txt_usuario.setText(PropertiesUtil.getProperty("banco.usuario"));
-            txt_senha.setText(PropertiesUtil.getProperty("banco.senha"));
-            txt_instancia.setText(PropertiesUtil.getProperty("banco.instancia")); 
-            
-            txt_versaoapp.setText(PropertiesUtil.getProperty("app.versao")); 
-            txt_versaopath.setText(PropertiesUtil.getProperty("app.versaopath")); 
-            txt_exportadir.setText(PropertiesUtil.getProperty("exporta.path"));
-            
-              // chamando e executando a classe conectaservidor
+            txt_versaoapp.setText(funcoes.GetProp("app.versao","N")); 
+            txt_versaopath.setText(funcoes.GetProp("app.versaopath","N")); 
+            txt_exportadir.setText(funcoes.GetProp("exporta.path","N"));
+            // chamando e executando a classe conectaservidor
             ConectaServidor s1 = new ConectaServidor(servidor);
-            //iniciando thread
             s1.start();  
             
          }catch(Exception e){
@@ -133,8 +144,24 @@ public class FormPrincipal extends JFrame {
             new String [] {
                 "I.D ", "IP. Host", "Host Name"
             }
-        ));
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(TableConecoes);
+        if (TableConecoes.getColumnModel().getColumnCount() > 0) {
+            TableConecoes.getColumnModel().getColumn(0).setResizable(false);
+            TableConecoes.getColumnModel().getColumn(0).setPreferredWidth(50);
+            TableConecoes.getColumnModel().getColumn(1).setResizable(false);
+            TableConecoes.getColumnModel().getColumn(1).setPreferredWidth(150);
+            TableConecoes.getColumnModel().getColumn(2).setResizable(false);
+            TableConecoes.getColumnModel().getColumn(2).setPreferredWidth(150);
+        }
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -145,13 +172,13 @@ public class FormPrincipal extends JFrame {
                 .addComponent(lblStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 919, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 589, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 685, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(72, Short.MAX_VALUE)
+                .addContainerGap(71, Short.MAX_VALUE)
                 .addComponent(lblStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 234, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -436,28 +463,28 @@ public class FormPrincipal extends JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        funcoes.SaveProp("app.versao",txt_versaoapp.getText());
-        funcoes.SaveProp("app.versaopath",txt_versaopath.getText());
-        funcoes.SaveProp("exporta.path",txt_exportadir.getText());
-        funcoes.SaveProp("banco.server",txt_server.getText());
-        funcoes.SaveProp("banco.porta",txt_porta.getText());
-        funcoes.SaveProp("banco.usuario",txt_usuario.getText());
-        funcoes.SaveProp("banco.senha",txt_senha.getText() );
-        funcoes.SaveProp("banco.database",txt_database.getText());
-        funcoes.SaveProp("banco.instancia",txt_instancia.getText());
+        funcoes.SaveProp("app.versao",txt_versaoapp.getText(),"N");
+        funcoes.SaveProp("app.versaopath",txt_versaopath.getText(),"N");
+        funcoes.SaveProp("exporta.path",txt_exportadir.getText(),"N");
+        funcoes.SaveProp("banco.server",txt_server.getText(),"N");
+        funcoes.SaveProp("banco.porta",txt_porta.getText(),"N");
+        funcoes.SaveProp("banco.usuario",txt_usuario.getText(),"N");
+        funcoes.SaveProp("banco.senha",txt_senha.getText(),"S");
+        funcoes.SaveProp("banco.database",txt_database.getText(),"N");
+        funcoes.SaveProp("banco.instancia",txt_instancia.getText(),"N");
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        funcoes.SaveProp("app.versao",txt_versaoapp.getText());
-        funcoes.SaveProp("app.versaopath",txt_versaopath.getText());
-        funcoes.SaveProp("exporta.path",txt_exportadir.getText());
-        funcoes.SaveProp("banco.server",txt_server.getText());
-        funcoes.SaveProp("banco.porta",txt_porta.getText());
-        funcoes.SaveProp("banco.usuario",txt_usuario.getText());
-        funcoes.SaveProp("banco.senha",txt_senha.getText() );
-        funcoes.SaveProp("banco.database",txt_database.getText());
-        funcoes.SaveProp("banco.instancia",txt_instancia.getText());
-    }//GEN-LAST:event_jButton1ActionPerformed
+         funcoes.SaveProp("app.versao",txt_versaoapp.getText(),"N");
+        funcoes.SaveProp("app.versaopath",txt_versaopath.getText(),"N");
+        funcoes.SaveProp("exporta.path",txt_exportadir.getText(),"N");
+        funcoes.SaveProp("banco.server",txt_server.getText(),"N");
+        funcoes.SaveProp("banco.porta",txt_porta.getText(),"N");
+        funcoes.SaveProp("banco.usuario",txt_usuario.getText(),"N");
+        funcoes.SaveProp("banco.senha",txt_senha.getText(),"S");
+        funcoes.SaveProp("banco.database",txt_database.getText(),"N");
+        funcoes.SaveProp("banco.instancia",txt_instancia.getText(),"N");
+	}//GEN-LAST:event_jButton1ActionPerformed
 
     private void txt_instanciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_instanciaActionPerformed
         // TODO add your handling code here:
@@ -546,9 +573,11 @@ public class FormPrincipal extends JFrame {
 class ConectaServidor extends Thread{
     private ServerSocket servidor;
     private int idUnico = 0;
+  
     
     public ConectaServidor(ServerSocket servidor){
         this.servidor = servidor;
+      
     }
     
    @Override
@@ -561,7 +590,11 @@ class ConectaServidor extends Thread{
                 ObjectInputStream in = new ObjectInputStream(cliente.getInputStream());
                 ObjectOutputStream out = new ObjectOutputStream(cliente.getOutputStream());
                 idUnico++;
-                System.out.println("Inicializando uma thread para cliente " + idUnico);
+                
+//                String o = (String) in.readObject();
+//                System.out.println("Usuario "+o);
+//                                
+                System.out.println("Inicializando uma thread para cliente " + idUnico + " ");
                 TrataClienteController trataCliente = new TrataClienteController(in, out,cliente,idUnico);
                 trataCliente.start();                
             }

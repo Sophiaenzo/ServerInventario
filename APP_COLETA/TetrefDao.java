@@ -29,6 +29,7 @@
 package model;
 
 import factory.Conector;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import modelDominio.Tetref;
+import util.Funcoes;
 import static util.Funcoes.DataHoraAtual;
 
 /**
@@ -45,8 +47,8 @@ import static util.Funcoes.DataHoraAtual;
  * @author wilson.simoes
  */
 public class TetrefDao {
-   private static Connection con;
-   private static Connection conn;
+   private Connection con;
+   private Connection conn;
    private String cOrigem;
    private String cBase;
    private int posi;  
@@ -61,24 +63,22 @@ public class TetrefDao {
    private int    cRe_codemp;
    private String cRe_datinv;
    private String cRe_coddep;
+   private String cRe_codpro;
    private String cRe_codder;
    private int    cRe_numcon;
+   private String cRe_qtdcon;
    private String cRe_usucon;
    private String cRe_datcon; 
    private int    cRe_seqcon; 
    private String cRe_horcon;
    private String cRe_etiqueta;
+   private String cRe_indbip;
+   private String cRe_obsbip;
+   private String cRe_lote; 
+   private String cRe_status;   
    private String cRe_mate;
    private boolean bloqueado;   
    private String vbloqueio;   
-
-   private String cRe_codpro;
-   private String cRe_lote; 
-   private String cRe_qtdcon;   
-   private String cRe_status;   
-   private String cRe_indbip;
-   private String cRe_obsbip;
-
    
    /**
     * Leitura dos codigos de barras
@@ -116,12 +116,17 @@ public class TetrefDao {
             cRe_obsbip = "Lancamento efetuado com sucesso"; 
             cRe_mate   = cMate;  
             
+            
+            
             cRe_codpro = "Vazio";
             cRe_lote   = "";
             cRe_qtdcon ="0";
             cRe_status  = "DANGER";
             cRe_indbip  = "N";
             
+            /*verifica se inventario esta bloqueado*/
+            /*vbloqueio = Funcoes.GetProp("inventario.bloqueado");*/
+          
             bloqueado = depositoBloqueado(cdata,cdeposito);            
             vbloqueio = "NAO";
             if (bloqueado){
@@ -129,10 +134,11 @@ public class TetrefDao {
             }
           
             
-            if(vbloqueio.equals("SIM")){                
+            if(vbloqueio.equals("SIM")){
+                
                  cRe_codpro = "Vazio";
                  cRe_lote   = "";
-                 cRe_qtdcon = "0";
+                 cRe_qtdcon ="0";
                  cRe_status  = "DANGER";
                  cRe_indbip  = "N";            
                  cRe_obsbip  = "Inventario bloqueado pelo PCP ";
@@ -159,100 +165,104 @@ public class TetrefDao {
             
             /*verifica se a etiqueta esta cadastrada*/
             if (continua == true) {
+                stmt = con.createStatement();
                 /*produzido*/
                 if(cMate.equals("PR")){
-                        stmt = con.createStatement();                    
                         cRe_codder =  "PADRAO";
+                        //query para produtos produzidos
                         sql = "select * from USU_TETREF where USU_SEQUNI = '" + cetiqueta +"'" ;
                         ResultSet rs = stmt.executeQuery(sql); 
                         if(rs.isBeforeFirst()){
                             while(rs.next()){
-                                                continua = true;
-                                                cOrigem  = rs.getString("USU_INFPRO");
-                                                cBase    = cOrigem.substring(1,cOrigem.length());
-                                                posi     = cBase.indexOf("@");
-                                                cRe_codpro = cBase.substring(0,posi);  
+                                   continua = true;
+                                   cOrigem  = rs.getString("USU_INFPRO");
+                                   cBase    = cOrigem.substring(1,cOrigem.length());
+                                   posi     = cBase.indexOf("@");
+                                   cRe_codpro = cBase.substring(0,posi);  
 
-                                                cOrigem  = cBase.substring(posi+2,cBase.length());
-                                                cBase    = cOrigem;
-                                                posi     = cBase.indexOf("!");
-                                                cRe_qtdcon = cBase.substring(0,posi);
+                                   cOrigem  = cBase.substring(posi+2,cBase.length());
+                                   cBase    = cOrigem;
+                                   posi     = cBase.indexOf("!");
+                                   cRe_qtdcon = cBase.substring(0,posi);
 
-                                                cOrigem  = cBase.substring(posi+2,cBase.length());
-                                                cBase    = cOrigem;
-                                                posi     = cBase.indexOf("#");
-                                                cRe_lote = cBase.substring(0,cBase.length()-2);
+                                   cOrigem  = cBase.substring(posi+2,cBase.length());
+                                   cBase    = cOrigem;
+                                   posi     = cBase.indexOf("#");
+                                   cRe_lote = cBase.substring(0,cBase.length()-2);
 
-                                                cRe_status   = "SUCESSO";
-                                                cRe_indbip  = "S";
-                                                cRe_obsbip = "Lancamento efetuado com sucesso";
-
-                                            }
+                                   cRe_status   = "SUCESSO";
+                                   cRe_indbip  = "S";
+                                   cRe_obsbip = "Lancamento efetuado com sucesso";
+                                   
+                            }
                         }else{
-                                                continua = false;
-                                                cRe_codpro = "Vazio";
-                                                cRe_lote   = "";
-                                                cRe_qtdcon ="0";
-                                                cRe_status  = "DANGER";
-                                                cRe_indbip  = "N";
-                        
-                                                sql = "select * from USU_TETQMPR where USU_SEQUNI = '" + cetiqueta +"'" ;  
-                                                ResultSet rsA = stmt.executeQuery(sql);            
-                                                if(rsA.isBeforeFirst()){
-                                                cRe_obsbip = "Etiqueta invalida e  Materia Prima";
-                                                 }else{    
-                                                    cRe_obsbip = "Etiqueta PR nao localizada";
-                                                } 
-                                                rsA.close();
+                            cRe_codpro = "Vazio";
+                            cRe_lote   = "";
+                            cRe_qtdcon ="0";
+                            cRe_status  = "DANGER";
+                            cRe_indbip  = "N";
+            
+                            continua = false;
+                            rs.close();
+                            stmt.close(); 
+                            
+                                    stmt = con.createStatement();
+                                    sql = "select * from USU_TETQMPR where USU_SEQUNI = '" + cetiqueta +"'" ;  
+                                    ResultSet rsA = stmt.executeQuery(sql);            
+                                    if(rsA.isBeforeFirst()){
+                                        cRe_obsbip = "Etiqueta invalida e  Materia Prima";
+                                    }else{    
+                                        cRe_obsbip = "Etiqueta nao localizada";
+                                    } 
+                            rs.close();
+                            rsA.close();
+                            stmt.close();
+                           
                         }   
 
-                       rs.close();
-                       stmt.close();
-             }
-                
-
-                
-            
-            if(cMate.equals("MP")){            
-                stmt = con.createStatement();
-                sql = "select * from USU_TETQMPR where USU_SEQUNI = '" + cetiqueta +"'" ;  
-                ResultSet rs = stmt.executeQuery(sql);            
+                        
+                        stmt.close();
+                    
+                }else{/*materia prima*/
+                    sql = "select * from USU_TETQMPR where USU_SEQUNI = '" + cetiqueta +"'" ;  
+                        ResultSet rs = stmt.executeQuery(sql);            
                         if(rs.isBeforeFirst()){
                              while(rs.next()){
                                    continua = true;
                                    cRe_codpro = rs.getString("USU_CODPRO");
                                    cRe_lote = "Sem Lote";
                                    cRe_qtdcon = rs.getString("USU_QTDIND");
-                                  
                                    cRe_status   = "SUCESSO";
                                    cRe_indbip  = "S";
                                    cRe_obsbip = "Lancamento efetuado com sucesso";  
                              }
                         }else{
-                            continua = false;
                             cRe_codpro = "Vazio";
                             cRe_lote   = "";
                             cRe_qtdcon ="0";
                             cRe_status  = "DANGER";
                             cRe_indbip  = "N";
-                            sql = "select * from USU_TETREF where USU_SEQUNI = '" + cetiqueta +"'" ;
-                            ResultSet rsA = stmt.executeQuery(sql);            
+            
+                            continua = false;
+                            rs.close();
+                            stmt.close(); 
+                                    stmt = con.createStatement();
+                                    sql = "select * from USU_TETREF where USU_SEQUNI = '" + cetiqueta +"'" ;
+                                    ResultSet rsA = stmt.executeQuery(sql);            
                                     if(rsA.isBeforeFirst()){
                                          cRe_obsbip = "Etiqueta Invalida e M.Produzido";
                                     }else{    
-                                         cRe_obsbip = "Etiqueta MP nao localizada";
+                                         cRe_obsbip = "Etiqueta nao localizada";
                                     } 
                             rsA.close();
-                       }
-                
-                rs.close();
-                stmt.close();
-             }
-
+                            stmt.close();
+                        }
+                       stmt.close();
+                       
+                }                
             }
             
-            
-            /*verifica se produto e deposito estao ativo*/
+            /*verifica se produto e deposito esta ativo*/
             if (continua == true) {
                 invAtivo = InventarioAtivo(cdata,cdeposito,cRe_codpro);
                 if(invAtivo == true){
@@ -278,7 +288,8 @@ public class TetrefDao {
                     cRe_lote   = "";
                     cRe_qtdcon ="0";
                     cRe_status  = "DANGER";
-                    cRe_indbip  = "N";            
+                    cRe_indbip  = "N";
+            
                     cRe_obsbip = "Produto Inativo";
                }
            }
@@ -321,7 +332,7 @@ public class TetrefDao {
                      cRe_status,
                      cRe_obsbip);   
                  listaDados.add(items); 
-            con.close();
+                 
             return listaDados; 
      } 
     
@@ -343,7 +354,7 @@ public class TetrefDao {
                 retorno = false;
                }
            rsAux.close();
-           stmtAux.close();
+           
        }catch(Exception e){
            System.out.println("TetreDao 318 -> " + e.getMessage());
        }
@@ -367,7 +378,6 @@ public class TetrefDao {
                  cRe_numcon = 1;
                }
            rsAux.close();
-           stmtAux.close();
        }catch(Exception e){
            System.out.println("TetreDao 318 -> " + e.getMessage());
        }
@@ -426,8 +436,8 @@ public class TetrefDao {
            }else{
                retorno = false;
            }
-          rsAux.close();
-          stmtAux.close();
+           rsAux.close();
+          // con.close();
            
        }catch(Exception e){
            System.out.println("TetreDao 380 -> " + e.getMessage());
@@ -461,7 +471,7 @@ public class TetrefDao {
                retorno = false;
            }
            rsAux.close();
-           stmtAux.close();
+           //con.close();
            
        }catch(Exception e){
            System.out.println("TetreDao 411 -> " + e.getMessage());
@@ -491,7 +501,6 @@ private boolean InventarioAtivo(String data,String deposito,String produto){
                 retorno = false;
                }
            rsAux.close();
-           stmtAux.close();
        }catch(Exception e){
            System.out.println("TetreDao 440 -> " + e.getMessage());
        }
@@ -516,7 +525,7 @@ private boolean InventarioAtivo(String data,String deposito,String produto){
          try {
            Statement stmtAux;
            stmtAux = con.createStatement();
-           String sqlAux = "select * from USU_TE220CON where USU_CODEMP = 3 AND USU_DATINV = '" + data + "' AND USU_CODDEP = '" + deposito + "' AND USU_CODPRO = '" + produto +"' AND USU_ETIQUETA = '"+ etiqueta + "' and USU_NUMCON = " + cRe_numcon ;
+           String sqlAux = "select * from USU_TE220CON where USU_CODEMP = 3 AND USU_DATINV = '" + data + "' AND USU_CODDEP = '" + deposito + "' AND USU_CODPRO = '" + produto +"' AND USU_ETIQUETA = '"+ etiqueta + "' and USU_NUMCON = 1" ;
            ResultSet rsAux = stmtAux.executeQuery(sqlAux);
            if (rsAux.isBeforeFirst()) {
                 cRe_status  = "ATENCAO";
@@ -528,10 +537,10 @@ private boolean InventarioAtivo(String data,String deposito,String produto){
                 }
                 resposta = false;
            }else {
-               resposta = true;
+            resposta = true;
            }           
+                        
            rsAux.close();
-           stmtAux.close();
          } catch (SQLException ex) {
            Logger.getLogger(TetrefDao.class.getName()).log(Level.SEVERE, null, ex);
        }
@@ -562,63 +571,43 @@ private boolean InventarioAtivo(String data,String deposito,String produto){
      * class que incluir os registros bipados na tabela USU_TE220CON
      */     
     
-    private void IncluiRegistro() throws ClassNotFoundException{
+    private void IncluiRegistro(){
             
        try {
-        
-          Statement sAux; 
-          sAux = con.createStatement();
-          String sqlAux = "select * from USU_TE220CON where USU_CODEMP = 3 AND USU_DATINV = '" + cRe_datinv + "' AND USU_CODDEP = '" + cRe_coddep + "' AND USU_CODPRO = '" + cRe_codpro + "' AND USU_ETIQUETA = '"+ cRe_etiqueta + "' and USU_NUMCON = " + cRe_numcon; 
-          ResultSet rr = sAux.executeQuery(sqlAux);
-          if (rr.isBeforeFirst()){
-              System.out.println("achou");
-          } else {   
-              /*
-               System.out.println("nao achou");
-               System.out.println(cRe_datinv);
-               System.out.println(cRe_coddep);
-               System.out.println(cRe_codpro);
-               System.out.println(cRe_etiqueta);
-               System.out.println(cRe_numcon);
-              */
-                    cRe_codder = PegaCodder(cRe_mate,cRe_indbip); 
-                    conn = Conector.getConnection();   
-
-                      String sqA = "insert into USU_TE220CON "
-                              + "(USU_CODEMP, USU_DATINV, USU_CODDEP, USU_CODPRO, USU_CODDER,"
-                              + " USU_NUMCON, USU_QTDCON, USU_USUCON, USU_DATCON, USU_SEQCON,"
-                              + " USU_HORCON, USU_ETIQUETA, USU_INDBIP, USU_OBSBIP)"
-                              + "values"
-                              + "(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-
-                      cRe_qtdcon = cRe_qtdcon.replaceAll( "," , "." );
-
-                      PreparedStatement st = conn.prepareStatement(sqA);                   
-                      st.setInt(1,cRe_codemp);
-                      st.setString(2,cRe_datinv);
-                      st.setString(3,cRe_coddep);
-                      st.setString(4,cRe_codpro);
-                      st.setString(5,cRe_codder);
-                      st.setInt(6,cRe_numcon);
-                      st.setDouble(7,Double.parseDouble(cRe_qtdcon));
-                      st.setString(8,cRe_usucon);
-                      st.setString(9,cRe_datcon);
-                      st.setInt(10,cRe_seqcon);
-                      st.setString(11,cRe_horcon);
-                      st.setString(12,cRe_etiqueta);
-                      st.setString(13,cRe_indbip);
-                      st.setString(14,cRe_obsbip);
-                      st.executeUpdate();
-
-                      st.close();
-                      rr.close();
-                      sAux.close();
-                      conn.close();
-              
-          }
+         cRe_codder = PegaCodder(cRe_mate,cRe_indbip); 
+         conn = Conector.getConnection();   
+            
+           String sqA = "insert into USU_TE220CON "
+                   + "(USU_CODEMP, USU_DATINV, USU_CODDEP, USU_CODPRO, USU_CODDER,"
+                   + " USU_NUMCON, USU_QTDCON, USU_USUCON, USU_DATCON, USU_SEQCON,"
+                   + " USU_HORCON, USU_ETIQUETA, USU_INDBIP, USU_OBSBIP)"
+                   + "values"
+                   + "(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
            
+           cRe_qtdcon = cRe_qtdcon.replaceAll( "," , "." );
            
-} catch (SQLException e) {
+           PreparedStatement st = conn.prepareStatement(sqA);                   
+           st.setInt(1,cRe_codemp);
+           st.setString(2,cRe_datinv);
+           st.setString(3,cRe_coddep);
+           st.setString(4,cRe_codpro);
+           st.setString(5,cRe_codder);
+           st.setInt(6,cRe_numcon);
+           st.setDouble(7,Double.parseDouble(cRe_qtdcon));
+           st.setString(8,cRe_usucon);
+           st.setString(9,cRe_datcon);
+           st.setInt(10,cRe_seqcon);
+           st.setString(11,cRe_horcon);
+           st.setString(12,cRe_etiqueta);
+           st.setString(13,cRe_indbip);
+           st.setString(14,cRe_obsbip);
+           st.executeUpdate();
+           
+           st.close();
+           conn.close();     
+           con.close();
+           
+} catch (SQLException | ClassNotFoundException e) {
 
      System.out.println("erro " + e.getMessage());
 

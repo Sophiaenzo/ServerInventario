@@ -84,13 +84,14 @@ public class Te220invcDao {
             }
     
     
-    private boolean BuscaRegistro(String data,String deposito){         
+    private boolean BuscaRegistro(String data,String deposito) throws SQLException{         
          boolean resposta = false;
+         ResultSet rsAux;
+         Statement stmtAux;
+         stmtAux = con.createStatement();
+         String sqlAux = "select * from USU_TE220INV where USU_CODEMP = 3 AND USU_DATINV = '" + data + "' AND USU_CODDEP = '" + deposito + "'" ;
          try {
-           Statement stmtAux;
-           stmtAux = con.createStatement();
-           String sqlAux = "select * from USU_TE220INV where USU_CODEMP = 3 AND USU_DATINV = '" + data + "' AND USU_CODDEP = '" + deposito + "'" ;
-           ResultSet rsAux = stmtAux.executeQuery(sqlAux);
+           rsAux = stmtAux.executeQuery(sqlAux);
            if (rsAux.isBeforeFirst()) {
                 resposta = false;
            }else {
@@ -98,6 +99,9 @@ public class Te220invcDao {
            }           
        } catch (SQLException ex) {
            System.out.println("Erro funcao buscaRegistro " + ex.getMessage());
+       } finally {
+            //Conector.close(con, stmtAux);
+             
        }
        return resposta;
     }   
@@ -117,6 +121,8 @@ public class Te220invcDao {
                     st.setInt(4,1);
                     st.setString(5,"0");
                     st.executeUpdate();
+                    System.out.println(cdatinv+" - "+ccoddep + " IncluidoRgistro");
+                    
                     st.close();
                     conn.close();          
                 } catch (SQLException | ClassNotFoundException e) {
@@ -161,4 +167,52 @@ public class Te220invcDao {
 
             }
    
+        
+        
+      public void verInicio(String cdata) throws ClassNotFoundException, SQLException {        
+          
+           Statement stmtAux;
+           stmtAux  = con.createStatement();
+           String sqlAux = "select * from E220INV where CODEMP = 3 AND DATINV = '" + cdata +"'" ;
+           ResultSet vrsAux ;
+           try {
+                   vrsAux = stmtAux.executeQuery(sqlAux);
+
+                   if (vrsAux.isBeforeFirst()) {
+                        System.out.println("achou na tabela e220inv");
+                        
+                           while(vrsAux.next())
+                                  {                                                                           
+                                      String ndata = vrsAux.getString("DATINV");
+                                      String ncodi = vrsAux.getString("CODDEP");                                      
+                                      System.out.println(cdata +" - " + ncodi);
+                                      
+                                      boolean res = BuscaRegistro(cdata,ncodi);
+                                     // System.out.println(res);
+                                       
+                                      if (!res) {
+                                        //System.out.println(cdata +" - "+ncodi + " ja existe");
+                                      } else {
+                                          IncluiRegistro(cdata,ncodi);
+                                          
+                                      }
+                                      
+                                  }
+                        
+                   }else {
+                        System.out.println("nao achou tabela e220inv");                         
+                   }  
+           }catch (SQLException e) {
+               
+           } finally {
+                Conector.close(con, stmtAux);
+           }
+           
+            
+       }   
+        
+        
+        
+        
+        
 }
