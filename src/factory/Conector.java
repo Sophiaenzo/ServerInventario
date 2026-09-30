@@ -23,37 +23,55 @@ public class Conector<AjaxBehaviorEvent> {
              * @return
              * @throws ClassNotFoundException 
              */
-        public static Connection getConnection() throws ClassNotFoundException{
-                Funcoes funcoes = new Funcoes();  
-                // Configuração dos parâmetros de conexão
-                String server   = funcoes.GetProp("banco.server","N");
-                String port     = funcoes.GetProp("banco.porta","N");
-                String database = funcoes.GetProp("banco.database","N");
-                // Configuração dos parâmetros de autenticação
-                String user     = funcoes.GetProp("banco.usuario","N");
-                String passwd   = funcoes.GetProp("banco.senha","S");
-                String banco    = funcoes.GetProp("banco.instancia","N");
-                String url = "jdbc:oracle:thin:@" + server + ":" + port + ":" + database;
-            
-                
-                
-        try{     
-                Connection conn = DriverManager.getConnection(url, user, passwd);
+        
+       
+       
+       
+       public static Connection getConnection() throws ClassNotFoundException {
+    Funcoes funcoes = new Funcoes();  
+    
+    // Ler os parâmetros de conexão
+    String server   = funcoes.GetProp("banco.server", "N");
+    String port     = funcoes.GetProp("banco.porta", "N");
+    String database = funcoes.GetProp("banco.database", "N");
+    String user     = funcoes.GetProp("banco.usuario", "N");
+    String passwd   = funcoes.GetProp("banco.senha", "S");
+    String banco    = funcoes.GetProp("banco.instancia", "N");
 
-                Class.forName("oracle.jdbc.driver.OracleDriver");        
-                conn.createStatement().execute("alter session set nls_date_format='dd/mm/yyyy hh24:mi:ss'");
-                
-                 if(banco != null && !banco.isEmpty() ){   
-                    conn.createStatement().execute("alter session set current_schema="+banco);
-                 }
-                //System.out.println("conectado ao banco");
+    // Garantir os valores padrão do formulário caso o .properties traga ora10g ou vazio
+    if (database == null || database.isEmpty() || "ora10g".equalsIgnoreCase(database)) {
+        database = "dbprod";
+    }
+    if (banco == null || banco.isEmpty()) {
+        banco = "oficial";
+    }
 
-                return conn;
-        }catch(SQLException ex){
-                System.out.println("Erro no sistema -> " + ex.getMessage());
-        }           
-        return null;
-    } 
+    String url = "jdbc:oracle:thin:@" + server + ":" + port + ":" + database;
+
+    try {     
+        // Carrega o driver JDBC
+        Class.forName("oracle.jdbc.driver.OracleDriver"); 
+
+        // Conecta ao Oracle
+        Connection conn = DriverManager.getConnection(url, user, passwd);
+
+        // Ajusta a sessão
+        conn.createStatement().execute("alter session set nls_date_format='dd/mm/yyyy hh24:mi:ss'");
+        
+        if (banco != null && !banco.isEmpty()) {   
+            conn.createStatement().execute("alter session set current_schema=" + banco);
+        }
+
+        return conn;
+    } catch (SQLException ex) {
+        System.out.println("Erro no sistema -> " + ex.getMessage());
+    }           
+    return null;
+}
+
+
+
+
         
  
        
