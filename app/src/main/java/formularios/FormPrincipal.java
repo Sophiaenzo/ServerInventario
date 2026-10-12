@@ -56,9 +56,10 @@ public class FormPrincipal extends JFrame {
     }
 
     // --- INICIALIZAÇÃO DAS CONFIGURAÇÕES E SERVIDORES ---
+ // --- INICIALIZAÇÃO DAS CONFIGURAÇÕES E SERVIDORES ---
     private void init() {
         try {
-            // Porta 12347 mantida para os aplicativos Desktop e Mobile antigos antigos
+            // Porta 12347 mantida para os aplicativos Desktop e Mobile antigos
             ServerSocket servidor = new ServerSocket(12347);
             lblStatus.setText("Servidor inicializado. Aguardando conexoes");
 
@@ -76,27 +77,21 @@ public class FormPrincipal extends JFrame {
             ConectaServidor s1 = new ConectaServidor(servidor);
             s1.start();
 
-            // --- NOVA PORTA EXCLUSIVA PARA O APP FLUTTER ---
+            // --- PORTA 12348 EXCLUSIVA PARA O FLUTTER ---
             ServerSocket servidorFlutter = new ServerSocket(12348);
             
-            // Thread secundária que vai gerenciar as conexões em texto puro vindas do Flutter
             new Thread(() -> {
                 while (true) {
                     try {
                         Socket clienteFlutter = servidorFlutter.accept();
+                        System.out.println("-> Nova conexao TCP recebida de: " + clienteFlutter.getInetAddress().getHostAddress());
                         
-                        // Atualiza a tabela na interface do seu Java usando a sua função segura existente
-                        AddLinhaTable(new Object[]{
-                            "FLUTTER", 
-                            clienteFlutter.getInetAddress().getHostAddress(), 
-                            clienteFlutter.getInetAddress().getHostName()
-                        });
-
-                        // Dispara o tratamento de mensagens para esse cliente Flutter conectado
+                        // IMPORTANTE: NAO CHAME AddLinhaTable AQUI!
+                        // Deixe para adicionar apenas dentro da thread quando o JSON de login chegar.
                         tratarClienteFlutter(clienteFlutter);
 
                     } catch (Exception e) {
-                        System.err.println("Erro na conexao com o app Flutter: " + e.getMessage());
+                        System.err.println("Erro na conexao Flutter: " + e.getMessage());
                     }
                 }
             }).start();
@@ -106,10 +101,11 @@ public class FormPrincipal extends JFrame {
         }
     }
 
-    // Método auxiliar para ler as mensagens em texto puro enviadas pelo Flutter
-    private void tratarClienteFlutter(Socket socket) {
+private void tratarClienteFlutter(Socket socket) {
         new Thread(() -> {
             String ipCliente = socket.getInetAddress().getHostAddress();
+            String usuarioRegistrado = null;
+
             try (
                 java.io.BufferedReader entrada = new java.io.BufferedReader(
                     new java.io.InputStreamReader(socket.getInputStream(), "UTF-8")
@@ -119,26 +115,62 @@ public class FormPrincipal extends JFrame {
                 )
             ) {
                 String linha;
-                // Lê linha por linha o que o Flutter enviar
                 while ((linha = entrada.readLine()) != null) {
-                    System.out.println("Recebido do Flutter (" + ipCliente + "): " + linha);
-                    
-                    // Exemplo de resposta automatica de volta para o Flutter
-                    saida.println("Java confirmou o recebimento de: " + linha);
+                    System.out.println("JSON recebido do Flutter: " + linha);
+
+                    // Extrai as chaves do JSON usando Regex nativo do Java
+                    String usuario = extrairValorJson(linha, "usuario");
+                    String ipLocal = extrairValorJson(linha, "ip");
+                    String hostname = extrairValorJson(linha, "hostname");
+
+                    if (usuario.isEmpty()) usuario = "DESCONHECIDO";
+                    if (ipLocal.isEmpty()) ipLocal = ipCliente;
+                    if (hostname.isEmpty()) hostname = ipCliente;
+
+                    // Remove registro temporário 'FLUTTER' da tabela, caso exista
+                    DelLinhaTable("FLUTTER");
+
+                    // Se esse usuário já tinha sido adicionado, atualiza
+                    if (usuarioRegistrado != null) {
+                        DelLinhaTable(usuarioRegistrado);
+                    }
+
+                    usuarioRegistrado = usuario;
+
+                    // Adiciona na tabela com o nome REAL do usuário recebido
+                    AddLinhaTable(new Object[]{
+                        usuario,   // Coluna I.D (ex: wilson)
+                        ipLocal,   // Coluna IP. Host
+                        hostname   // Coluna Host Name
+                    });
+
+                    saida.println("OK: Usuario " + usuario + " conectado com sucesso!");
                 }
             } catch (Exception e) {
-                System.out.println("Cliente Flutter desconectado: " + ipCliente);
+                System.out.println("Cliente Flutter desconectado (" + ipCliente + "): " + e.getMessage());
             } finally {
-                // Remove o cliente da tabela ao desconectar usando seu método existente
-                DelLinhaTable("FLUTTER");
+                if (usuarioRegistrado != null) {
+                    DelLinhaTable(usuarioRegistrado);
+                }
                 try { socket.close(); } catch (Exception ignored) {}
             }
         }).start();
     }
 
-
-
-
+    // Método auxiliar com Regex para extrair os valores do JSON recebido
+    private String extrairValorJson(String json, String chave) {
+        try {
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"" + chave + "\"\\s*:\\s*\"([^\"]+)\"");
+            java.util.regex.Matcher matcher = pattern.matcher(json);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+    
     private void salvarPropriedades() {
         funcoes.SaveProp("app.versao", txt_versaoapp.getText(), "N");
         funcoes.SaveProp("app.versaopath", txt_versaopath.getText(), "N");
