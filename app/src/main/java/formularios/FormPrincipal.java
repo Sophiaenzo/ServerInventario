@@ -1,8 +1,12 @@
 package formularios;
 
 import controller.TrataClienteController;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import javax.swing.JFrame;
@@ -19,8 +23,7 @@ public class FormPrincipal extends JFrame {
         init();
     }
 
-    // --- MANIPULAÇÃO SEGURA DA TABELA ---
-
+    // --- MANIPULAÇÃO SEGURA DA TABELA SWING ---
     public static void AddLinhaTable(Object[] object) {
         SwingUtilities.invokeLater(() -> {
             DefaultTableModel model = (DefaultTableModel) TableConecoes.getModel();
@@ -30,10 +33,10 @@ public class FormPrincipal extends JFrame {
 
     public static void DelLinhaTable(String campo) {
         if (campo == null || campo.isEmpty()) return;
-        
+
         SwingUtilities.invokeLater(() -> {
             DefaultTableModel model = (DefaultTableModel) TableConecoes.getModel();
-            // Loop inverso para evitar deslocamento de índice ao remover linhas
+            // Loop inverso para evitar erro de deslocamento de índice ao remover linhas
             for (int i = model.getRowCount() - 1; i >= 0; i--) {
                 if (campo.equals(model.getValueAt(i, 0))) {
                     model.removeRow(i);
@@ -56,13 +59,10 @@ public class FormPrincipal extends JFrame {
     }
 
     // --- INICIALIZAÇÃO DAS CONFIGURAÇÕES E SERVIDORES ---
- // --- INICIALIZAÇÃO DAS CONFIGURAÇÕES E SERVIDORES ---
+
     private void init() {
         try {
-            // Porta 12347 mantida para os aplicativos Desktop e Mobile antigos
-            ServerSocket servidor = new ServerSocket(12347);
-            lblStatus.setText("Servidor inicializado. Aguardando conexoes");
-
+            // Carrega configurações gravadas nas propriedades
             txt_server.setText(funcoes.GetProp("banco.server", "N"));
             txt_porta.setText(funcoes.GetProp("banco.porta", "N"));
             txt_database.setText(funcoes.GetProp("banco.database", "N"));
@@ -73,52 +73,61 @@ public class FormPrincipal extends JFrame {
             txt_versaopath.setText(funcoes.GetProp("app.versaopath", "N"));
             txt_exportadir.setText(funcoes.GetProp("exporta.path", "N"));
 
-            // Dispara a thread que aguarda os sockets antigos
-            ConectaServidor s1 = new ConectaServidor(servidor);
-            s1.start();
-
-            // --- PORTA 12348 EXCLUSIVA PARA O FLUTTER ---
-            ServerSocket servidorFlutter = new ServerSocket(12348);
-            
+            // 1. SERVIDO LEGADO (Porta 12347)
             new Thread(() -> {
-                while (true) {
-                    try {
-                        Socket clienteFlutter = servidorFlutter.accept();
-                        System.out.println("-> Nova conexao TCP recebida de: " + clienteFlutter.getInetAddress().getHostAddress());
-                        
-                        // IMPORTANTE: NAO CHAME AddLinhaTable AQUI!
-                        // Deixe para adicionar apenas dentro da thread quando o JSON de login chegar.
-                        tratarClienteFlutter(clienteFlutter);
-
-                    } catch (Exception e) {
-                        System.err.println("Erro na conexao Flutter: " + e.getMessage());
+                try {
+                    ServerSocket servidorLegado = new ServerSocket(12347);
+                    SwingUtilities.invokeLater(() -> lblStatus.setText("Servidor inicializado. Aguardando conexões..."));
+                    
+                    int idUnico = 1;
+                    while (true) {
+                        Socket cliente = servidorLegado.accept();
+                        ObjectOutputStream out = new ObjectOutputStream(cliente.getOutputStream());
+                        ObjectInputStream in = new ObjectInputStream(cliente.getInputStream());
+                        new TrataClienteController(in, out, cliente, idUnico++).start();
                     }
+                } catch (Exception e) {
+                    System.err.println("Erro no Servidor Legado (Porta 12347): " + e.getMessage());
                 }
             }).start();
-            
+
+            // 2. SERVIDOR FLUTTER - DUPLO CHECK (Porta 12348)
+            new Thread(() -> {
+                try {
+                    ServerSocket servidorFlutter = new ServerSocket(12348);
+                    System.out.println("-> Servidor Flutter escutando na porta 12348...");
+
+                    while (true) {
+                        Socket clienteFlutter = servidorFlutter.accept();
+                        System.out.println("-> Nova conexão TCP Flutter recebida de: " + clienteFlutter.getInetAddress().getHostAddress());
+                        tratarClienteFlutter(clienteFlutter);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Erro no Servidor Flutter (Porta 12348): " + e.getMessage());
+                }
+            }).start();
+
         } catch (Exception e) {
-            System.err.println("Erro ao inicializar o servidor: " + e.getMessage());
+            System.err.println("Erro ao inicializar configurações: " + e.getMessage());
         }
     }
 
-private void tratarClienteFlutter(Socket socket) {
+    // --- TRATAMENTO DAS MENSAGENS TCP/JSON DO FLUTTER ---
+    private void tratarClienteFlutter(Socket socket) {
         new Thread(() -> {
             String ipCliente = socket.getInetAddress().getHostAddress();
             String usuarioRegistrado = null;
 
             try (
-                java.io.BufferedReader entrada = new java.io.BufferedReader(
-                    new java.io.InputStreamReader(socket.getInputStream(), "UTF-8")
-                );
-                java.io.PrintWriter saida = new java.io.PrintWriter(
-                    new java.io.OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true
-                )
+                BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+                PrintWriter saida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true)
             ) {
                 String linha;
                 while ((linha = entrada.readLine()) != null) {
+                    if (linha.trim().isEmpty()) continue;
                     System.out.println("JSON recebido do Flutter: " + linha);
 
-                    // Extrai as chaves do JSON usando Regex nativo do Java
+                    String tipo = extrairValorJson(linha, "tipo");
                     String usuario = extrairValorJson(linha, "usuario");
                     String ipLocal = extrairValorJson(linha, "ip");
                     String hostname = extrairValorJson(linha, "hostname");
@@ -127,24 +136,66 @@ private void tratarClienteFlutter(Socket socket) {
                     if (ipLocal.isEmpty()) ipLocal = ipCliente;
                     if (hostname.isEmpty()) hostname = ipCliente;
 
-                    // Remove registro temporário 'FLUTTER' da tabela, caso exista
+                    // Trata atualização de presença do usuário conectado na tabela Swing
                     DelLinhaTable("FLUTTER");
-
-                    // Se esse usuário já tinha sido adicionado, atualiza
                     if (usuarioRegistrado != null) {
                         DelLinhaTable(usuarioRegistrado);
                     }
-
                     usuarioRegistrado = usuario;
 
-                    // Adiciona na tabela com o nome REAL do usuário recebido
                     AddLinhaTable(new Object[]{
-                        usuario,   // Coluna I.D (ex: wilson)
+                        usuario,   // Coluna I.D 
                         ipLocal,   // Coluna IP. Host
                         hostname   // Coluna Host Name
                     });
 
-                    saida.println("OK: Usuario " + usuario + " conectado com sucesso!");
+                    // Caso a mensagem seja a gravação da Dupla Checagem feita pelo App
+                    if ("DUPLA_CHECAGEM".equalsIgnoreCase(tipo)) {
+                        String loginUsuario = extrairValorJson(linha, "usuario");
+                        String primeiroCodigo = extrairValorJson(linha, "primeiro_codigo");
+                        String segundoCodigo = extrairValorJson(linha, "segundo_codigo");
+                        String codigoBase = extrairValorJson(linha, "codigo_base");
+
+                        // 1. BUSCA O CÓDIGO NUMÉRICO DIRETO NA TABELA E099usu
+                        String codigoUsuarioNum = "0";
+                        String sqlUsu = "SELECT CODUSU FROM E099usu WHERE UPPER(NOMUSU) = ?";
+                        
+                        try (java.sql.Connection conn = factory.Conector.getConnection();
+                            java.sql.PreparedStatement psUsu = conn.prepareStatement(sqlUsu)) {
+                            
+                            psUsu.setString(1, loginUsuario.trim().toUpperCase());
+                            try (java.sql.ResultSet rsUsu = psUsu.executeQuery()) {
+                                if (rsUsu.next()) {
+                                    codigoUsuarioNum = rsUsu.getString("CODUSU");
+                                }
+                            }
+                        } catch (Exception e) {
+                            System.err.println("-> Erro ao buscar CODUSU na E099usu: " + e.getMessage());
+                        }
+
+                        // 2. VERIFICA SE JA FOI CHECADO (usu_dupche = 'S')
+                        model.TetrefDaoN dao = new model.TetrefDaoN();
+                        boolean jaChecado = dao.isEtiquetaJaChecada(codigoBase);
+
+                        if (jaChecado) {
+                            System.out.println("-> [DUPLO CHECK] Atenção: Etiqueta ja checada.");
+                            saida.println("ALERTA: Essa etiqueta ja foi registrada anteriormente!");
+                        } else {
+                            // 3. GRAVA NO BANCO CASO NÃO TENHA SIDO CHECADA
+                            boolean gravou = dao.salvarDuplaChecagem(codigoUsuarioNum, primeiroCodigo, segundoCodigo, codigoBase);
+
+                            if (gravou) {
+                                System.out.println("-> [DUPLO CHECK] Sucesso!");
+                                saida.println("OK: Processado com sucesso!");
+                            } else {
+                                System.err.println("-> [DUPLO CHECK] Falha ao gravar.");
+                                saida.println("ERRO: Falha ao salvar a conferência no banco.");
+                            }
+                        }
+                    } else {
+                        // Resposta padrão apenas para mensagens de Keep-Alive / Login / Conexão
+                        saida.println("OK: Conectado com sucesso!");
+                    }
                 }
             } catch (Exception e) {
                 System.out.println("Cliente Flutter desconectado (" + ipCliente + "): " + e.getMessage());
@@ -157,7 +208,7 @@ private void tratarClienteFlutter(Socket socket) {
         }).start();
     }
 
-    // Método auxiliar com Regex para extrair os valores do JSON recebido
+    // Auxiliar Regex para extrair chaves de texto do JSON enviado pelo Flutter
     private String extrairValorJson(String json, String chave) {
         try {
             java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"" + chave + "\"\\s*:\\s*\"([^\"]+)\"");
@@ -170,7 +221,7 @@ private void tratarClienteFlutter(Socket socket) {
         }
         return "";
     }
-    
+
     private void salvarPropriedades() {
         funcoes.SaveProp("app.versao", txt_versaoapp.getText(), "N");
         funcoes.SaveProp("app.versaopath", txt_versaopath.getText(), "N");
@@ -561,7 +612,6 @@ private void tratarClienteFlutter(Socket socket) {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private static javax.swing.JTable TableConecoes;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel10;
@@ -582,49 +632,16 @@ private void tratarClienteFlutter(Socket socket) {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JLabel lblStatus;
-    private static javax.swing.JTextField txt_database;
-    private static javax.swing.JTextField txt_exportadir;
-    private static javax.swing.JTextField txt_instancia;
+    private static javax.swing.JLabel lblStatus;
+    private static javax.swing.JTable TableConecoes;
+    private javax.swing.JTextField txt_database;
+    private javax.swing.JTextField txt_exportadir;
+    private javax.swing.JTextField txt_instancia;
     private javax.swing.JTextField txt_porta;
-    private static javax.swing.JTextField txt_senha;
-    private static javax.swing.JTextField txt_server;
-    private static javax.swing.JTextField txt_usuario;
-    private static javax.swing.JTextField txt_versaoapp;
-    private static javax.swing.JTextField txt_versaopath;
+    private javax.swing.JTextField txt_senha;
+    private javax.swing.JTextField txt_server;
+    private javax.swing.JTextField txt_usuario;
+    private javax.swing.JTextField txt_versaoapp;
+    private javax.swing.JTextField txt_versaopath;
     // End of variables declaration//GEN-END:variables
-}
-
-// --- THREAD DO SERVIDOR SOCKET ---
-
-class ConectaServidor extends Thread {
-
-    private final ServerSocket servidor;
-    private int idUnico = 0;
-
-    public ConectaServidor(ServerSocket servidor) {
-        this.servidor = servidor;
-    }
-
-    @Override
-    public void run() {
-        try {
-            while (!servidor.isClosed()) {
-                Socket cliente = servidor.accept();
-                System.out.println("Um novo cliente conectou " + cliente);
-
-                ObjectInputStream in = new ObjectInputStream(cliente.getInputStream());
-                ObjectOutputStream out = new ObjectOutputStream(cliente.getOutputStream());
-                idUnico++;
-
-                System.out.println("Inicializando uma thread para cliente " + idUnico);
-
-                // Instanciação mantida identicamente ao padrão do seu projeto em produção
-                TrataClienteController trataCliente = new TrataClienteController(in, out, cliente, idUnico);
-                trataCliente.start();
-            }
-        } catch (Exception e) {
-            System.err.println("Erro na ConectaServidor: " + e.getMessage());
-        }
-    }
 }
